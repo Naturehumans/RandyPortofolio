@@ -30,7 +30,8 @@ export default function Contact() {
 
   const submit = async (event) => {
     event.preventDefault()
-    const form = new FormData(event.currentTarget)
+    const formEl = event.currentTarget
+    const form = new FormData(formEl)
     const result = buildMessage(form)
     if (result.error) {
       setStatus({ state: 'error', text: result.error })
@@ -65,7 +66,7 @@ export default function Contact() {
       }
       lastSentRef.current = Date.now()
       setStatus({ state: 'success', text: `Pesan terkirim ke ${site.email}. Terima kasih!` })
-      event.currentTarget.reset()
+      formEl?.reset()
     } catch {
       setStatus({ state: 'error', text: `Pengiriman gagal. Coba lagi atau email langsung ke ${site.email}.` })
     }
