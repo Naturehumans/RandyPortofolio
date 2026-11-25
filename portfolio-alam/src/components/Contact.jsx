@@ -48,21 +48,7 @@ export default function Contact() {
 
     setStatus({ state: 'sending', text: 'Mengirim pesan…' })
     const customEndpoint = safeUrl(import.meta.env.VITE_CONTACT_ENDPOINT || '')
-    const endpoint =
-      customEndpoint && customEndpoint.startsWith('https://')
-        ? customEndpoint
-        : `https://formsubmit.co/ajax/${site.email}`
-
-    const payload = customEndpoint
-      ? result.data
-      : {
-          name: result.data.nama,
-          email: result.data.email,
-          message: result.data.pesan,
-          _subject: `Pesan Portofolio dari ${result.data.nama}`,
-          _replyto: result.data.email,
-          _template: 'table',
-        }
+    const endpoint = customEndpoint || '/api/contact'
 
     try {
       const response = await fetch(endpoint, {
@@ -71,19 +57,11 @@ export default function Contact() {
           'Content-Type': 'application/json',
           Accept: 'application/json',
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(result.data),
       })
       const json = await response.json().catch(() => ({}))
-      if (!response.ok || json.success === 'false' || json.success === false) {
-        const msg = typeof json.message === 'string' ? json.message : ''
-        if (/activat/i.test(msg)) {
-          setStatus({
-            state: 'error',
-            text: `Form belum diaktivasi: buka email ${site.email} (cek Inbox/Spam) lalu klik "Activate Form", setelah itu coba kirim lagi.`,
-          })
-          return
-        }
-        throw new Error(`HTTP ${response.status}`)
+      if (!response.ok) {
+        throw new Error(json.error || `HTTP ${response.status}`)
       }
       lastSentRef.current = Date.now()
       setStatus({ state: 'success', text: `Pesan terkirim ke ${site.email}. Terima kasih!` })
