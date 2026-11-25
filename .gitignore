@@ -23,8 +23,17 @@ target/
 .taste-skill/
 
 # Scratch Directory (Temporary Experiments)
-scratch/*
-!scratch/README.md
+scratch/
+
+# Non-Deployment / AI Agent & Documentation Files
+.agents/
+.claude/
+AGENTS.md
+CLAUDE.md
+docs/
+scripts/
+Makefile
+skills-lock.json
 
 # Testing & Coverage
 coverage/
