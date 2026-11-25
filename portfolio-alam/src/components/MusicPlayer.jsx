@@ -58,14 +58,22 @@ export default function MusicPlayer() {
     const detach = () => {
       audio.removeEventListener('canplay', tryPlay)
       window.removeEventListener('pointerdown', onGesture, opts)
+      window.removeEventListener('pointerup', onGesture, opts)
       window.removeEventListener('mousedown', onGesture, opts)
       window.removeEventListener('click', onGesture, opts)
       window.removeEventListener('keydown', onGesture, opts)
       window.removeEventListener('touchstart', onGesture, opts)
+      window.removeEventListener('touchend', onGesture, opts)
     }
 
     const tryPlay = () => {
-      if (cancelled || userPausedRef.current || !audio.paused) return
+      if (cancelled || userPausedRef.current) return
+      if (!audio.paused) {
+        if (audio.volume < TARGET_VOLUME) fadeVolume(audio, TARGET_VOLUME)
+        setPlaying(true)
+        detach()
+        return
+      }
       audio.volume = 0
       const p = audio.play()
       if (p && typeof p.then === 'function') {
@@ -89,10 +97,12 @@ export default function MusicPlayer() {
     tryPlay()
     audio.addEventListener('canplay', tryPlay)
     window.addEventListener('pointerdown', onGesture, opts)
+    window.addEventListener('pointerup', onGesture, opts)
     window.addEventListener('mousedown', onGesture, opts)
     window.addEventListener('click', onGesture, opts)
     window.addEventListener('keydown', onGesture, opts)
     window.addEventListener('touchstart', onGesture, opts)
+    window.addEventListener('touchend', onGesture, opts)
 
     return () => {
       cancelled = true
