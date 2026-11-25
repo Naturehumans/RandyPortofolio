@@ -1,0 +1,32 @@
+# Environment & Secrets
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+vendor/
+
+# System & OS Files
+.DS_Store
+Thumbs.db
+*.log
+
+# Build & Generated Outputs
+dist/
+build/
+out/
+target/
+*.o
+*.bin
+*.class
+.taste-skill/
+
+# Scratch Directory (Temporary Experiments)
+scratch/*
+!scratch/README.md
+
+# Testing & Coverage
+coverage/
+*.lcov
+.nyc_output/

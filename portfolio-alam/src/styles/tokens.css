@@ -1,0 +1,125 @@
+/* =========================================================
+   TOKEN DESAIN — Single Source of Truth (DESIGN.md §2)
+   Konsep: "Hutan hujan tropis saat fajar", editorial-organik.
+   Semua komponen hanya boleh merujuk token di file ini.
+   ========================================================= */
+
+:root {
+  /* Tipografi */
+  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-body: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+
+  /* Skala tipe fluid (clamp) */
+  --text-hero: clamp(2.4rem, 9.5vw, 6.25rem);
+  --text-h2: clamp(1.875rem, 4.5vw, 3rem);
+  --text-statement: clamp(1.25rem, 2.4vw, 2rem);
+
+  /* ---- Mode terang: kertas sage saat fajar ---- */
+  --c-bg: #eef0e2;            /* kertas sage — ground */
+  --c-raised: #f7f6ec;        /* kartu / permukaan naik satu nada */
+  --c-sunken: #e3e6d3;        /* bidang turun satu nada */
+  --c-ink: #1d2a1c;           /* tinta hutan gelap — teks utama */
+  --c-muted: #4c5a42;         /* teks sekunder (kontras 6.4:1 di atas bg) */
+  --c-accent: #a84a2b;        /* terracotta — teks & aksi (kontras 4.9:1) */
+  --c-accent-soft: #c96f4c;   /* terracotta untuk teks besar / dekorasi */
+  --c-ochre: #7a5a14;         /* oker untuk teks kecil (kontras 5.5:1) */
+  --c-forest: #0d1a12;        /* bidang hijau hutan paling gelap */
+  --c-leaf: #8fae62;          /* hijau daun muda — garis & dekorasi */
+  --c-moss: #5a703c;          /* hijau lumut (kontras 4.7:1 di atas bg) */
+  --c-line: #d5d8c2;          /* garis form saja */
+  --c-veil: rgba(238, 240, 226, 0.9);
+  --c-veil-soft: rgba(238, 240, 226, 0.45);
+  --c-scrim: rgba(13, 26, 18, 0.78);
+  --c-on-forest: #eef0e2;
+  --c-muted-on-forest: #b9c4a6;
+
+  /* Keterlihatan animasi stroke & cahaya partikel (per tema):
+     di atas kertas sage garis perlu lebih pekat agar geraknya terbaca */
+  --alpha-vine-main: 0.7;
+  --alpha-vine-echo: 0.38;
+  --alpha-trunk: 0.6;
+  --c-firefly: rgba(122, 90, 20, 0.8);
+  --c-firefly-halo: rgba(122, 90, 20, 0);
+
+  /* Aksen di atas bidang hutan (selalu gelap) — konstan di kedua tema */
+  --c-forest-leaf: #8fae62;
+  --c-forest-moss: #a9bd84;
+  --c-forest-terracotta: #e08a63;
+  --c-forest-ochre: #ddba62;
+  --c-hover-on-forest: rgba(143, 174, 98, 0.12);
+
+  /* Bentuk organik (asimetris, seperti daun) */
+  --radius-leaf: 58% 42% 45% 55% / 48% 56% 44% 52%;
+  --radius-leaf-b: 42% 58% 55% 45% / 56% 44% 52% 48%;
+  --radius-organic: 22px 14px 20px 12px / 14px 22px 12px 20px;
+
+  /* Bayangan hanya untuk elemen yang benar-benar melayang (menu, toast) */
+  --shadow-float: 0 18px 40px -20px rgba(13, 26, 18, 0.45);
+
+  color-scheme: light;
+}
+
+/* Mode gelap — mengikuti preferensi sistem bila tak ada pilihan eksplisit */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --c-bg: #0d1a12;
+    --c-raised: #14241a;
+    --c-sunken: #0a140e;
+    --c-ink: #e9eedd;
+    --c-muted: #a9b697;
+    --c-accent: #e08a63;
+    --c-accent-soft: #b35c3b;
+    --c-ochre: #ddba62;
+    --c-forest: #081009;
+    --c-leaf: #8fae62;
+    --c-moss: #a9bd84;
+    --c-line: #24382a;
+    --c-veil: rgba(13, 26, 18, 0.9);
+    --c-veil-soft: rgba(13, 26, 18, 0.5);
+    --c-scrim: rgba(6, 12, 8, 0.8);
+    --c-on-forest: #e9eedd;
+    --c-muted-on-forest: #b9c4a6;
+    --alpha-vine-main: 0.5;
+    --alpha-vine-echo: 0.25;
+    --alpha-trunk: 0.4;
+    --c-firefly: rgba(255, 214, 140, 0.95);
+    --c-firefly-halo: rgba(255, 214, 140, 0);
+    --shadow-float: 0 18px 40px -20px rgba(0, 0, 0, 0.6);
+
+    color-scheme: dark;
+  }
+}
+
+/* Mode gelap eksplisit dari toggle tema */
+[data-theme='dark'] {
+  --c-bg: #0d1a12;
+  --c-raised: #14241a;
+  --c-sunken: #0a140e;
+  --c-ink: #e9eedd;
+  --c-muted: #a9b697;
+  --c-accent: #e08a63;
+  --c-accent-soft: #b35c3b;
+  --c-ochre: #ddba62;
+  --c-forest: #081009;
+  --c-leaf: #8fae62;
+  --c-moss: #a9bd84;
+  --c-line: #24382a;
+  --c-veil: rgba(13, 26, 18, 0.9);
+  --c-veil-soft: rgba(13, 26, 18, 0.5);
+  --c-scrim: rgba(6, 12, 8, 0.8);
+  --c-on-forest: #e9eedd;
+  --c-muted-on-forest: #b9c4a6;
+  --alpha-vine-main: 0.5;
+  --alpha-vine-echo: 0.25;
+  --alpha-trunk: 0.4;
+  --c-firefly: rgba(255, 214, 140, 0.95);
+  --c-firefly-halo: rgba(255, 214, 140, 0);
+  --shadow-float: 0 18px 40px -20px rgba(0, 0, 0, 0.6);
+
+  color-scheme: dark;
+}
+
+/* Pilihan eksplisit terang saat sistem gelap: kembali ke nilai :root */
+[data-theme='light'] {
+  color-scheme: light;
+}

@@ -1,0 +1,257 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---------- Dasar ---------- */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    /* Scrollbar disembunyikan; halaman tetap bisa digulir */
+    scrollbar-width: none;
+  }
+  html::-webkit-scrollbar {
+    display: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  body {
+    @apply bg-bg font-body text-ink antialiased;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* Grain kertas tipis di atas segalanya; tak bisa diklik */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    pointer-events: none;
+    opacity: 0.05;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E");
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+  }
+
+  p {
+    max-width: 65ch;
+  }
+
+  ::selection {
+    background: var(--c-leaf);
+    color: var(--c-forest);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--c-accent);
+    outline-offset: 3px;
+  }
+
+  /* Gambar placeholder (1px) disembunyikan agar slot menggambar sendiri */
+  img[data-placeholder='true'] {
+    opacity: 0;
+  }
+  /* Tanpa foto nyata, penudung hero tak ada gunanya: biarkan bidangnya murni */
+  img[data-placeholder='true'] + .hero-scrim {
+    opacity: 0;
+  }
+
+  /* Mode gelap: watermark slot sedikit lebih terang agar tak menjadi rongga kosong */
+  @media (prefers-color-scheme: dark) {
+    .slot::before {
+      opacity: 0.26;
+    }
+  }
+  [data-theme='dark'] .slot::before {
+    opacity: 0.26;
+  }
+}
+
+/* ---------- Komponen utilitas ---------- */
+@layer components {
+  .wrap {
+    @apply mx-auto w-full max-w-wrap px-5 sm:px-8;
+  }
+
+  .skip-link {
+    position: fixed;
+    top: 0.75rem;
+    left: 0.75rem;
+    z-index: 80;
+    transform: translateY(-300%);
+    transition: transform 0.2s ease;
+    background: var(--c-forest);
+    color: var(--c-on-forest);
+    padding: 0.75rem 1.25rem;
+    border-radius: 999px;
+    font-weight: 500;
+  }
+  .skip-link:focus-visible {
+    transform: translateY(0);
+  }
+
+  /* Slot gambar: permukaan tint + watermark daun digambar sendiri,
+     sehingga halaman tetap indah sebelum foto asli ditaruh */
+  .slot {
+    position: relative;
+    overflow: hidden;
+    background: var(--c-sunken);
+  }
+  .slot::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 88 C 20 70, 14 38, 30 12 C 62 26, 78 56, 66 88 C 60 92, 56 92, 50 88 Z' fill='none' stroke='%235a703c' stroke-width='3'/%3E%3Cpath d='M34 66 C 44 52, 54 40, 62 24' fill='none' stroke='%235a703c' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E")
+      center / 42% no-repeat;
+    opacity: 0.14;
+    pointer-events: none;
+  }
+  .slot img {
+    position: absolute;
+    inset: 0;
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease;
+  }
+  /* Lapisan bergerak parallax: lebih tinggi dari slot agar tak ada celah */
+  .parallax-inner {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -10%;
+    bottom: -10%;
+  }
+  .slot-dark {
+    background: var(--c-forest);
+  }
+  .slot-dark::before {
+    opacity: 0.22;
+  }
+
+  /* Potret About: foto resolusi penuh mengisi bingkai 4:5 (crop sudah
+     disiapkan di berkas, jadi tak ada bagian yang terpotong CSS),
+     duduk di alas sage dengan halo daun tipis yang bergoyang pelan. */
+  .slot-portrait img {
+    object-fit: cover;
+    object-position: center top;
+  }
+  .portrait-halo {
+    animation: halo-drift 11s ease-in-out infinite alternate;
+  }
+  @keyframes halo-drift {
+    from {
+      transform: rotate(-2deg) translateY(2px);
+    }
+    to {
+      transform: rotate(2deg) translateY(-7px);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .portrait-halo {
+      animation: none;
+    }
+  }
+
+  .blob-a {
+    border-radius: var(--radius-leaf);
+  }
+  .blob-b {
+    border-radius: var(--radius-leaf-b);
+  }
+  .paper {
+    border-radius: var(--radius-organic);
+  }
+
+  /* Tombol: pill, flat, satu warna isian — diputuskan sekali untuk semua */
+  .btn {
+    @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full px-6 font-medium;
+    transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.2s ease,
+      color 0.2s ease;
+  }
+  .btn:hover {
+    transform: translateY(-2px);
+  }
+  .btn:active {
+    transform: translateY(0);
+  }
+  .btn-solid {
+    background: var(--c-accent);
+    color: #fff6ec;
+  }
+  .btn-solid:hover {
+    background: var(--c-accent-soft);
+    color: #fff6ec;
+  }
+  .btn-quiet {
+    background: var(--c-sunken);
+    color: var(--c-ink);
+  }
+  .btn-quiet:hover {
+    background: var(--c-line);
+  }
+  .btn-forest {
+    background: var(--c-on-forest);
+    color: var(--c-forest);
+  }
+
+  /* Target sentuh penuh untuk ikon */
+  .btn-icon {
+    @apply inline-flex h-11 w-11 items-center justify-center rounded-full;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+  }
+  .btn-icon:hover {
+    background: var(--c-sunken);
+    transform: translateY(-1px);
+  }
+
+  /* Kolam koi (Pond): sentuhan vertikal tetap menggulir halaman, dan
+     kursor sistem disembunyikan hanya saat scene hidup — atas air
+     kursor digantikan "jari celup" yang digambar oleh canvas. */
+  .pond-canvas {
+    touch-action: pan-y;
+  }
+  .pond-canvas[data-live='true'] {
+    cursor: none;
+  }
+}
+
+/* ---------- Peralihan tema ----------
+   Snapshot lama dibiarkan utuh di bawah; snapshot tema baru "merambat"
+   lewat clip-path yang dianimasikan ThemeToggle.jsx (View Transitions API).
+   Bila API tidak ada, pergantian terjadi langsung tanpa lapisan ini. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-old(root) {
+  z-index: 1;
+}
+::view-transition-new(root) {
+  z-index: 2;
+}
+::view-transition-group(root) {
+  animation-duration: 900ms;
+}
+
+/* Saat tema ditukar, transisi warna komponen (mis. header) dimatikan
+   sesaat agar snapshot tema baru langsung berwarna akhir — tidak ada
+   pita abu-abu di tengah wipe. */
+html[data-theme-swap] *,
+html[data-theme-swap] *::before,
+html[data-theme-swap] *::after {
+  transition-duration: 0s !important;
+}

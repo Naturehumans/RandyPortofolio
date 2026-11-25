@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Build
+dist/
+dist-ssr/
+
+# Lingkungan — berisi nilai yang nyata. VITE_ terekspos ke publik, jangan simpan secret.
+.env
+.env.local
+.env.*.local
+
+# Log
+npm-debug.log*
+yarn-error.log*
+
+# Editor & OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+
+# Skill kerja (hasil audit lokal)
+.taste-skill/
