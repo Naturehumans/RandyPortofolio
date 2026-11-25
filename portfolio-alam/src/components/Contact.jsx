@@ -46,7 +46,6 @@ export default function Contact() {
       return
     }
 
-    lastSentRef.current = Date.now()
     setStatus({ state: 'sending', text: 'Mengirim pesan…' })
     const customEndpoint = safeUrl(import.meta.env.VITE_CONTACT_ENDPOINT || '')
     const endpoint =
@@ -76,8 +75,17 @@ export default function Contact() {
       })
       const json = await response.json().catch(() => ({}))
       if (!response.ok || json.success === 'false' || json.success === false) {
+        const msg = typeof json.message === 'string' ? json.message : ''
+        if (/activat/i.test(msg)) {
+          setStatus({
+            state: 'error',
+            text: `Form belum diaktivasi: buka email ${site.email} (cek Inbox/Spam) lalu klik "Activate Form", setelah itu coba kirim lagi.`,
+          })
+          return
+        }
         throw new Error(`HTTP ${response.status}`)
       }
+      lastSentRef.current = Date.now()
       setStatus({ state: 'success', text: `Pesan terkirim ke ${site.email}. Terima kasih!` })
       event.currentTarget.reset()
     } catch {
