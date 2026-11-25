@@ -9,25 +9,8 @@ import { Pause, Play, X } from 'lucide-react'
   JANGAN mengganti dengan lagu berhak cipta tanpa lisensi.
 */
 const AUDIO_SRC = '/audio/nature-jazz.mp3'
-const OFF_KEY = 'alam-music-off'
 const TARGET_VOLUME = 0.3
 const FADE_MS = 600
-
-function readFlag(key) {
-  try {
-    return localStorage.getItem(key)
-  } catch {
-    return null
-  }
-}
-
-function writeFlag(key, value) {
-  try {
-    localStorage.setItem(key, value)
-  } catch {
-    /* penyimpanan bisa ditolak — abaikan */
-  }
-}
 
 /** Fade volume dengan rAF (hanya properti volume, tanpa layout). */
 function fadeVolume(audio, target, onDone) {
@@ -47,6 +30,7 @@ function fadeVolume(audio, target, onDone) {
 
 export default function MusicPlayer() {
   const audioRef = useRef(null)
+  const userPausedRef = useRef(false)
   const [playing, setPlaying] = useState(false)
   const [toast, setToast] = useState(false)
   const [broken, setBroken] = useState(false)
@@ -55,6 +39,7 @@ export default function MusicPlayer() {
   const start = () => {
     const audio = audioRef.current
     if (!audio || broken) return Promise.resolve(false)
+    userPausedRef.current = false
     audio.volume = 0
     return audio.play().then(() => {
       fadeVolume(audio, TARGET_VOLUME)
@@ -63,51 +48,62 @@ export default function MusicPlayer() {
     })
   }
 
-  // Default aktif: coba putar langsung; bila diblokir kebijakan autoplay,
-  // mulai pada interaksi pertama pengguna — tanpa mengganggu halaman.
+  // Selalu coba autoplay saat dibuka atau di-refresh; bila diblokir kebijakan
+  // autoplay browser, langsung mulai pada interaksi pertama pengguna.
   useEffect(() => {
-    if (readFlag(OFF_KEY) === 'true') return undefined
-    let batal = false
-    let aktif = false
-    let audio = null
+    let cancelled = false
+    const audio = audioRef.current
+    if (!audio) return undefined
 
-    const attempt = () => {
-      if (aktif) return
-      audio = audioRef.current
-      if (!audio) return
-      aktif = true
+    const detach = () => {
+      audio.removeEventListener('canplay', tryPlay)
+      window.removeEventListener('pointerdown', onGesture, opts)
+      window.removeEventListener('mousedown', onGesture, opts)
+      window.removeEventListener('click', onGesture, opts)
+      window.removeEventListener('keydown', onGesture, opts)
+      window.removeEventListener('touchstart', onGesture, opts)
+    }
+
+    const tryPlay = () => {
+      if (cancelled || userPausedRef.current || !audio.paused) return
       audio.volume = 0
-      audio
-        .play()
-        .then(() => {
-          if (batal) return
+      const p = audio.play()
+      if (p && typeof p.then === 'function') {
+        p.then(() => {
+          if (cancelled) return
           fadeVolume(audio, TARGET_VOLUME)
           setPlaying(true)
-        })
-        .catch((err) => {
-          aktif = false
-          if (batal || (err && err.name === 'NotAllowedError')) return
+          detach()
+        }).catch((err) => {
+          if (cancelled) return
+          if (err && (err.name === 'NotAllowedError' || err.name === 'AbortError')) return
           setBroken(true)
           setToast(true)
         })
+      }
     }
 
-    attempt()
-    const buka = () => attempt()
-    window.addEventListener('pointerdown', buka)
-    window.addEventListener('keydown', buka)
-    window.addEventListener('touchstart', buka)
+    const onGesture = () => tryPlay()
+    const opts = { capture: true, passive: true }
+
+    tryPlay()
+    audio.addEventListener('canplay', tryPlay)
+    window.addEventListener('pointerdown', onGesture, opts)
+    window.addEventListener('mousedown', onGesture, opts)
+    window.addEventListener('click', onGesture, opts)
+    window.addEventListener('keydown', onGesture, opts)
+    window.addEventListener('touchstart', onGesture, opts)
+
     return () => {
-      batal = true
-      window.removeEventListener('pointerdown', buka)
-      window.removeEventListener('keydown', buka)
-      window.removeEventListener('touchstart', buka)
+      cancelled = true
+      detach()
     }
   }, [])
 
   const stop = () => {
     const audio = audioRef.current
     if (!audio) return
+    userPausedRef.current = true
     fadeVolume(audio, 0, () => audio.pause())
     setPlaying(false)
   }
@@ -115,26 +111,21 @@ export default function MusicPlayer() {
   const toggle = () => {
     if (playing) {
       stop()
-      writeFlag(OFF_KEY, 'true')
       return
     }
     if (broken) {
       setToast(true)
       return
     }
-    start()
-      .then((ok) => {
-        if (ok) writeFlag(OFF_KEY, 'false')
-      })
-      .catch(() => {
-        setBroken(true)
-        setToast(true)
-      })
+    start().catch(() => {
+      setBroken(true)
+      setToast(true)
+    })
   }
 
   return (
     <>
-      <audio ref={audioRef} src={AUDIO_SRC} loop preload="none" onError={() => setBroken(true)} />
+      <audio ref={audioRef} src={AUDIO_SRC} loop preload="auto" autoPlay onError={() => setBroken(true)} />
 
       <AnimatePresence>
         {toast && (

@@ -1,4 +1,4 @@
-import { Suspense, lazy } from 'react'
+import { Suspense, lazy, useEffect } from 'react'
 import { LazyMotion, domAnimation } from 'framer-motion'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
@@ -21,6 +21,10 @@ function SectionFallback({ minHeight = '70vh' }) {
 }
 
 export default function App() {
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+  }, [])
+
   return (
     <LazyMotion features={domAnimation} strict>
       <a href="#konten" className="skip-link">

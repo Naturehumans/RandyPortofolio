@@ -45,9 +45,10 @@ function VineSide({ side, leafPoints }) {
 
   return (
     <div
-      className={`pointer-events-none fixed inset-y-0 ${side === 'kiri' ? 'left-0' : 'right-0'} w-[64px] md:w-[96px] ${
+      className={`pointer-events-none fixed inset-y-0 z-[60] ${side === 'kiri' ? 'left-0' : 'right-0'} w-[64px] md:w-[96px] ${
         side === 'kanan' ? 'hidden md:block' : 'block'
       }`}
+      style={{ zIndex: 60 }}
       aria-hidden="true"
     >
       <svg

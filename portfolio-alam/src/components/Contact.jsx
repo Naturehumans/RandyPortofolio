@@ -48,24 +48,40 @@ export default function Contact() {
 
     lastSentRef.current = Date.now()
     setStatus({ state: 'sending', text: 'Mengirim pesan…' })
-    const endpoint = safeUrl(import.meta.env.VITE_CONTACT_ENDPOINT || '')
+    const customEndpoint = safeUrl(import.meta.env.VITE_CONTACT_ENDPOINT || '')
+    const endpoint =
+      customEndpoint && customEndpoint.startsWith('https://')
+        ? customEndpoint
+        : `https://formsubmit.co/ajax/${site.email}`
+
+    const payload = customEndpoint
+      ? result.data
+      : {
+          name: result.data.nama,
+          email: result.data.email,
+          message: result.data.pesan,
+          _subject: `Pesan Portofolio dari ${result.data.nama}`,
+          _replyto: result.data.email,
+          _template: 'table',
+        }
 
     try {
-      if (endpoint && endpoint.startsWith('https://')) {
-        const response = await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(result.data),
-        })
-        if (!response.ok) throw new Error(`HTTP ${response.status}`)
-      } else {
-        // Mode demo tanpa endpoint — lihat .env.example untuk memasang endpoint.
-        await new Promise((resolve) => setTimeout(resolve, 700))
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify(payload),
+      })
+      const json = await response.json().catch(() => ({}))
+      if (!response.ok || json.success === 'false' || json.success === false) {
+        throw new Error(`HTTP ${response.status}`)
       }
-      setStatus({ state: 'success', text: 'Pesan terkirim. Saya balas dalam dua hari kerja.' })
+      setStatus({ state: 'success', text: `Pesan terkirim ke ${site.email}. Terima kasih!` })
       event.currentTarget.reset()
     } catch {
-      setStatus({ state: 'error', text: 'Pengiriman gagal. Coba lagi atau email langsung, ya.' })
+      setStatus({ state: 'error', text: `Pengiriman gagal. Coba lagi atau email langsung ke ${site.email}.` })
     }
   }
 
